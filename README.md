@@ -1,90 +1,40 @@
-# Coch - Game Screen Capture & Suggestions (Android)
+# Coch — MVP Android
 
-## Overview
+Coch es una aplicación Android mínima con controles **Iniciar** y **Parar** para una sesión de captura de pantalla. Al iniciar, Android muestra su diálogo del sistema para pedir consentimiento; la captura nunca comienza en silencio.
 
-**Coch** is an Android application that captures your device's screen and provides simple text-based game suggestions. This is the **MVP v1** — a minimal, simple implementation focused on:
+## Requisitos
 
-- Start/Stop controls for screen capture
-- Requesting screen-capture permission via Android's MediaProjection API
-- Displaying very basic text suggestions
-- **NO game interaction**: no input injection, no overlays, no automation
+- Android Studio estable con Android SDK 35.
+- JDK 17.
+- Un dispositivo o emulador Android 9 (API 28) o posterior.
 
-## Current Features (v1)
+## Compilar y ejecutar
 
-- ✅ "Iniciar" (Start) and "Parar" (Stop) buttons
-- ✅ Android screen-capture permission flow
-- ✅ Basic placeholder text suggestions (deterministic rules-based)
-- ✅ Clean state management (Idle → Permission Pending → Running → Stopped)
-- ✅ Foreground service for screen capture (Android 8+)
-- ✅ Safe lifecycle and permission cleanup
+```bash
+./gradlew test
+./gradlew assembleDebug
+./gradlew installDebug
+```
 
-## Future Work
+También puedes abrir el proyecto en Android Studio y ejecutarlo desde allí.
 
-- 🚀 OCR integration for real screen-text analysis
-- 🚀 Floating panel overlay with suggestions
-- 🚀 Intelligent recommendation engine
-- 🚀 Game-specific strategies and hints
+1. Abre **Coch** y pulsa **Iniciar**.
+2. En el diálogo del sistema, permite compartir la pantalla para esta sesión.
+3. La app muestra el estado **RUNNING** y tres sugerencias de ejemplo.
+4. Pulsa **Parar** para finalizar la sesión.
 
-## Prerequisites
+Si deniegas o cancelas el permiso, la app muestra un mensaje y permite volver a intentarlo. Android muestra una notificación persistente mientras el servicio de captura está activo. Al detener la app desde Recientes, el servicio libera la sesión.
 
-- **Android SDK 28+** (target SDK 35+)
-- **Android Studio** (latest stable)
-- **Kotlin 1.9+**
-- **Gradle 8.0+**
+## Permisos y comportamiento
 
-## Build & Run
+El manifiesto declara `FOREGROUND_SERVICE` y `FOREGROUND_SERVICE_MEDIA_PROJECTION`, y el servicio especifica el tipo `mediaProjection`. La app solicita el consentimiento mediante `MediaProjectionManager` y solo después inicia el servicio de primer plano. Android también puede finalizar una sesión desde el sistema; la app refleja ese estado.
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/llacskon33/coch.git
-   cd coch
-   ```
+Las sugerencias son **marcadores de posición deterministas**. Los fotogramas capturados se descartan inmediatamente; sus píxeles no se inspeccionan ni analizan. No hay OCR, ML ni recomendaciones de red.
 
-2. Open in Android Studio and build:
-   ```bash
-   ./gradlew build
-   ```
+## Limitaciones y trabajo futuro
 
-3. Install on a connected device or emulator:
-   ```bash
-   ./gradlew installDebug
-   ```
+- Integrar análisis local de pantalla (por ejemplo OCR) solo tras diseñar explícitamente el tratamiento de imágenes y privacidad.
+- Mejorar los mensajes de error y las pruebas en dispositivos Android reales.
+- No controlar juegos ni otras apps: no se inyectan toques, teclado o controles; no hay `AccessibilityService`, permiso de superposición, panel flotante ni automatización.
 
-4. Launch the app:
-   - Open "Coch" from your launcher
-   - Tap **"Iniciar"** to request screen-capture permission
-   - Android will show a system dialog; tap **Allow**
-   - The app enters "Running" state and displays suggestions
-   - Tap **"Parar"** to stop capture and return to idle
-
-## Permissions
-
-- **CAPTURE_VIDEO_OUTPUT** (MediaProjection): Requests in-app via system dialog
-- **FOREGROUND_SERVICE**: Declared in manifest for screen-capture service
-- **FOREGROUND_SERVICE_MEDIA_PROJECTION** (Android 14+): Declared in manifest
-
-**Note**: Android requires explicit user consent for screen capture via a system permission prompt. The app does NOT have permission to capture silently.
-
-## Architecture
-
-- **MainActivity**: UI (Compose), state management, permission flow
-- **ScreenCaptureService**: Foreground service handling MediaProjection lifecycle
-- **SuggestionProvider**: Placeholder suggestion logic (to be replaced with OCR + ML)
-
-## Important: No Game Control
-
-This app **only displays suggestions**. It does **not**:
-- Inject touch, keyboard, or controller input
-- Draw overlays on other apps
-- Use accessibility services to automate game actions
-- Monitor or interfere with game logic
-
-All interactions are confined to the Coch app window. Suggestions are informational only.
-
-## License
-
-TBD
-
-## Support
-
-See issues on GitHub for known limitations and feature requests.
+La app está intencionalmente limitada a mostrar sugerencias dentro de su propia ventana. No se implementarán controles de juego ni superposiciones como parte de este MVP.
